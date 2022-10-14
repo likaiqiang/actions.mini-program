@@ -1,9 +1,11 @@
 import path from 'path';
+
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import fs from 'fs-extra';
-import ci from './lib/cli';
+
 import config from './config';
+import ci from './lib/cli';
 
 async function run(): Promise<void> {
   try {
@@ -18,7 +20,7 @@ async function run(): Promise<void> {
 
     const { MINI_APP_ID, MINI_APP_PRIVATE_KEY, GITHUB_WORKSPACE: sourceDir = '' } = process.env;
     const uploadDir = path.join(sourceDir, projectPath);
-    
+
     const timestamp = new Date().getTime();
     const privateKeyDir = `./private.${timestamp}.key`;
     await fs.outputFile(privateKeyDir, MINI_APP_PRIVATE_KEY);
@@ -33,7 +35,7 @@ async function run(): Promise<void> {
     });
 
     const existsRobotConfig = await fs.pathExists(path.join(sourceDir, '.mini-program-robot.js'))
-    
+
     let robotConfig: any= {};
 
     if(robotsAttr) {
@@ -55,7 +57,7 @@ async function run(): Promise<void> {
     const branch = github.context.ref.replace(/refs\/heads\//, '');
     const pullRuestTitle = github.context.payload.pull_request?.title;
     const robot = robotConfig[branch] || robotConfig[author] || 28;
-    const commits = github.context.payload.commits || [{message: `robot ${robot} trigger this pub`}];
+    const commits = [...(github.context.payload.commits || []),{message: `robot ${robot} trigger this pub`}].filter(t=>t);
 
     const project = new ci({
       sourceDir,
@@ -82,7 +84,7 @@ async function run(): Promise<void> {
 
     await project[handle]();
 
-    console.log('upload success');
+    console.log('upload success done');
   } catch (error) {
     core.setFailed(error);
   }
