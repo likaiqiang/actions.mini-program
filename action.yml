@@ -48,5 +48,5 @@ outputs:
   source_map_save_path:
     description: source-map-save-path
 runs:
-  using: "node12"
+  using: "node16"
   main: "./dist/min/index.js"
